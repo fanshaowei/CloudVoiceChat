@@ -2,7 +2,6 @@ package cn.com.chengziapp.cloudvoicechat.pushserver.netty;
 
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.buffer.ByteBuf;
-import io.netty.buffer.Unpooled;
 import io.netty.channel.ChannelFuture;
 import io.netty.channel.ChannelOption;
 import io.netty.channel.EventLoopGroup;
@@ -11,11 +10,13 @@ import io.netty.channel.socket.SocketChannel;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 
 import javax.annotation.PostConstruct;
+import javax.annotation.PreDestroy;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 
+import cn.com.chengziapp.cloudvoicechat.service.MyMessageEncode;
 import cn.com.chengziapp.cloudvoicechat.service.NettyService;
 
 /**
@@ -27,7 +28,7 @@ import cn.com.chengziapp.cloudvoicechat.service.NettyService;
 public class PushNettyServer {
 	private static Logger logger = LoggerFactory.getLogger(PushNettyServer.class);
 	
-	private Thread pushNettyClientThread;
+	private Thread pushNettyServerThread;
 	
 	private EventLoopGroup pushBoosGroup ;	
 	private EventLoopGroup pushworkGroup ;
@@ -42,12 +43,10 @@ public class PushNettyServer {
 	}
 	
 	@PostConstruct
-	public void initPushServer(){
-		
-		pushNettyClientThread = new Thread(){
+	public void initPushServer(){		
+		pushNettyServerThread = new Thread(){
 			@Override
-			public void run() {
-				super.run();				
+			public void run() {				
 				pushServerBootstrap = new ServerBootstrap();
 				pushServerChannelInit = new PushServerChannelInit();	
 				
@@ -67,25 +66,25 @@ public class PushNettyServer {
 				}					
 			}
 		};
-		
-		pushNettyClientThread.start();
-			
+		pushNettyServerThread.setName("pushNettyServerThread");
+		pushNettyServerThread.start();			
 	}
 	
+	@PreDestroy
+	public void closePushNettyServerThread(){
+		if(pushNettyServerThread.isAlive()){
+			pushNettyServerThread.interrupt();			
+		}
+	}
 	
-	/*public PushNettyServer getPushNettyServer(){		
-		PushNettyServer pushNettyServer = new PushNettyServer();
-		pushNettyServer.initPushServer();
+	public void writeMsg(String channelKey, String send){		
+		ByteBuf sendByteBuf = MyMessageEncode.messageEncode(MyMessageEncode.headType.VP2PNS.toString(), 
+				send.length(), send);
 		
-		return pushNettyServer;
-	}*/
-	
-	public void writeMsg(String send){		
-		ByteBuf byteBuf = Unpooled.copiedBuffer(send.getBytes());
-		SocketChannel socketChannel = NettyService.getNettyChannel(NettyService.channelKey);
+		SocketChannel socketChannel = NettyService.getNettyChannel(channelKey);
 		
 		if(socketChannel != null){
-			socketChannel.writeAndFlush(byteBuf);
+			socketChannel.writeAndFlush(sendByteBuf);
 		}else{
 			logger.info("-----------------推送服务器没有连接----------------------------------");
 		}		

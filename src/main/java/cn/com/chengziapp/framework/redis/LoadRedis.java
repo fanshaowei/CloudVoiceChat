@@ -21,7 +21,7 @@ public class LoadRedis {
 	@Bean
 	public JedisPool initRedisPool(){		
 		
-		logger.info("--------------------初始化Redis配置-------------------------");
+		logger.info("--------------------初始化redis配置-------------------------");
     	
     	//读取 redis.properties 配置文件文件
     	ResourceBundle bundle = ResourceBundle.getBundle("redis");

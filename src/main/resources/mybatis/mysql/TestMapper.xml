@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="cn.com.chengziapp.framework.test.mapper.TestMapper" >
     
-  	<select id="findTestList"  resultType="test">
+  	<select id="findTestList"  resultType="cn.com.chengziapp.framework.test.bean.Test">
   		SELECT * FROM test	
   	</select>  	
   	  

@@ -11,7 +11,8 @@ public class PushServerOutboundChannelHandler extends ChannelOutboundHandlerAdap
 	private static final Logger logger = Logger.getLogger(PushServerOutboundChannelHandler.class);
 	
 	@Override
-	public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {		
+	public void write(ChannelHandlerContext ctx, Object msg, ChannelPromise promise) throws Exception {
+		logger.info("----------------PushServer write--------------------------------");
 		ByteBuf buf = (ByteBuf) msg;
 		
 		ctx.writeAndFlush(buf);
